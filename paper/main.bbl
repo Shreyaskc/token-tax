@@ -1,4 +1,4 @@
-\begin{thebibliography}{6}
+\begin{thebibliography}{8}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -13,6 +13,14 @@ Orevaoghene Ahia, Sachin Kumar, Hila Gonen, Jungo Kasai, David~R. Mortensen,
   commercial language models.
 \newblock In \emph{Proceedings of the 2023 Conference on Empirical Methods in
   Natural Language Processing (EMNLP)}, pages 9904--9923, 2023.
+
+\bibitem[Akerman et~al.(2023)Akerman, Baines, Daspit, Hermjakob, Jang, Leong,
+  Martin, Mathew, Robie, and Schwarting]{akerman2023ebible}
+Vesa Akerman, David Baines, Damien Daspit, Ulf Hermjakob, Taeho Jang, Colin
+  Leong, Michael Martin, Joel Mathew, Jonathan Robie, and Marcus Schwarting.
+\newblock The ebible corpus: Data and model benchmarks for bible translation
+  for low-resource languages.
+\newblock \emph{arXiv preprint arXiv:2304.09919}, 2023.
 
 \bibitem[Chandrahas(2026)]{chandrahas2026evalci}
 Shreyas~K Chandrahas.
@@ -53,5 +61,13 @@ Thomas Wolf, Lysandre Debut, Victor Sanh, Julien Chaumond, Clement Delangue,
 \newblock Transformers: State-of-the-art natural language processing.
 \newblock In \emph{Proceedings of the 2020 Conference on Empirical Methods in
   Natural Language Processing: System Demonstrations}, pages 38--45, 2020.
+
+\bibitem[Zhang et~al.(2020)Zhang, Williams, Titov, and
+  Sennrich]{zhang2020opus100}
+Biao Zhang, Philip Williams, Ivan Titov, and Rico Sennrich.
+\newblock Improving massively multilingual neural machine translation and
+  zero-shot translation.
+\newblock In \emph{Proceedings of the 58th Annual Meeting of the Association
+  for Computational Linguistics (ACL)}, pages 1628--1639, 2020.
 
 \end{thebibliography}
