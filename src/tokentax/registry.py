@@ -36,7 +36,8 @@ REGISTRY: "dict[str, TokenizerSpec]" = {
     ),
     "llama-3": TokenizerSpec(
         name="llama-3", family="meta", backend="huggingface",
-        source="NousResearch/Meta-Llama-3-8B", revision="main", gated=False,
+        source="NousResearch/Meta-Llama-3-8B",
+        revision="315b20096dc791d381d514deb5f8bd9c8d6d3061", gated=False,
         notes=(
             "the canonical meta-llama/Meta-Llama-3-8B requires Meta's manual "
             "license approval (not auto-approved like this portfolio's other "
@@ -46,20 +47,22 @@ REGISTRY: "dict[str, TokenizerSpec]" = {
     ),
     "qwen2.5": TokenizerSpec(
         name="qwen2.5", family="alibaba", backend="huggingface",
-        source="Qwen/Qwen2.5-7B", revision="main",
+        source="Qwen/Qwen2.5-7B", revision="d149729398750b98c0af14eb82c78cfe92750796",
     ),
     "deepseek-v3": TokenizerSpec(
         name="deepseek-v3", family="deepseek", backend="huggingface",
-        source="deepseek-ai/DeepSeek-V3", revision="main",
+        source="deepseek-ai/DeepSeek-V3", revision="e815299b0bcbac849fa540c768ef21845365c9eb",
     ),
     "mistral": TokenizerSpec(
         name="mistral", family="mistral", backend="huggingface",
-        source="mistralai/Mistral-7B-v0.3", revision="main", gated=False,
+        source="mistralai/Mistral-7B-v0.3",
+        revision="caa1feb0e54d415e2df31207e5f4e273e33509b1", gated=False,
         notes="verified ungated as of 2026-08-08; requires protobuf installed for tokenizer conversion",
     ),
     "gemma-2": TokenizerSpec(
         name="gemma-2", family="google", backend="huggingface",
-        source="google/gemma-2-9b", revision="main", gated=True,
+        source="google/gemma-2-9b",
+        revision="33c193028431c2fde6c6e51f29e6f17b60cbfac6", gated=True,
         notes=(
             "gated on Hugging Face. Gemini has no public tokenizer artifact; "
             "gemma-2 is used as an open SentencePiece proxy for it and MUST be "

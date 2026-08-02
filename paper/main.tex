@@ -507,11 +507,15 @@ result in this paper for the reason given in Section~\ref{sec:methods}, not
 because it is exempt from the phenomenon. The Llama 3 tokenizer is measured
 via an ungated third-party mirror, not Meta's own gated repository. Gemma-2
 is reported only as itself, not as a validated proxy for Gemini's
-(unpublished) tokenizer. Finally, every number in this paper reflects the
-specific tokenizer revisions pinned at measurement time
-(Section~\ref{sec:availability}); tokenizer vocabularies are periodically
-updated by their maintainers, and the versioned dataset, not this PDF, is
-the source of truth for current numbers.
+(unpublished) tokenizer. Finally, every number in this paper reflects
+specific tokenizer commits, recorded in the released code
+(Section~\ref{sec:availability}); the five Hugging Face-hosted tokenizers
+were originally measured against their \texttt{main} branch rather than a
+frozen commit, which we have since corrected by pinning the registry to the
+exact commit \texttt{main} resolved to at that time (verified to reproduce
+identical token counts). Tokenizer vocabularies are periodically updated by
+their maintainers, and the versioned dataset, not this PDF, is the source
+of truth for current numbers.
 
 \section{Ethics Statement}
 

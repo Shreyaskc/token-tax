@@ -13,3 +13,9 @@ data/cache/*
 data/results/*
 !data/results/tokentax_summary_devtest.csv
 !data/results/opus_domain_check.csv
+
+# Anonymized ARR/peer-review submission — must NEVER be pushed to this
+# public, non-anonymous repo. Linking "Anonymous ACL submission" back to
+# this identified repository would defeat double-blind review entirely.
+# Keep local-only; upload directly to OpenReview instead.
+paper/arr/
