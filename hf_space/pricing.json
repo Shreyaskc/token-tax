@@ -1,0 +1,38 @@
+{
+  "verified": false,
+  "last_checked": null,
+  "models": {
+    "gpt-4o": {
+      "input_per_million_usd": 2.5,
+      "output_per_million_usd": 10.0
+    },
+    "gpt-4": {
+      "input_per_million_usd": 30.0,
+      "output_per_million_usd": 60.0
+    },
+    "claude": {
+      "input_per_million_usd": 3.0,
+      "output_per_million_usd": 15.0
+    },
+    "llama-3": {
+      "input_per_million_usd": 0.2,
+      "output_per_million_usd": 0.2
+    },
+    "qwen2.5": {
+      "input_per_million_usd": 0.2,
+      "output_per_million_usd": 0.2
+    },
+    "deepseek-v3": {
+      "input_per_million_usd": 0.27,
+      "output_per_million_usd": 1.1
+    },
+    "mistral": {
+      "input_per_million_usd": 0.2,
+      "output_per_million_usd": 0.6
+    },
+    "gemma-2": {
+      "input_per_million_usd": 0.2,
+      "output_per_million_usd": 0.2
+    }
+  }
+}

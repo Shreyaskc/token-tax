@@ -1,0 +1,6 @@
+gradio
+pandas
+pyarrow
+plotly
+pyyaml
+huggingface_hub

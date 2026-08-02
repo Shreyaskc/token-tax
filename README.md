@@ -48,13 +48,24 @@ register, with some corpus-specific outliers worth a caveat in the paper
 Bible-corpus pairings diverge 44–72%, likely small/idiosyncratic samples in
 those specific files). Results in `data/results/opus_domain_check.csv`.
 
-**Phase 3 (results dataset) is published:**
+**Phase 3 (results dataset + explorer) is published:**
 [`shreyaskc/tokentax-results-v1`](https://huggingface.co/datasets/shreyaskc/tokentax-results-v1)
 on Hugging Face — `flores200_summary.parquet` (the CI-backed long-format
 table), `flores200_raw.parquet` (1.64M per-sentence rows), and
 `opus_domain_check.parquet`, under CC0 for the derived statistics (no source
 sentence text is redistributed). Re-publish with
 `scripts/publish_hf_dataset.py`.
+
+The [tokentax explorer](https://huggingface.co/spaces/shreyaskc/tokentax-explorer)
+(heatmap + "what does N tokens buy in your language" calculator) is live as
+a **static** Space — Hugging Face requires a PRO subscription to host
+Gradio/Docker Spaces even on the free CPU tier, so `hf_space/` is a
+Plotly.js + vanilla-JS page reading a bundled `data.json`/`pricing.json`
+snapshot rather than a live Hub read. Rebuild with
+`scripts/build_static_explorer.py` after a new results version, then
+redeploy with `scripts/publish_hf_space.py`. A functionally identical
+Gradio version (live Hub reads, no rebuild step) sits unpublished at
+`scripts/gradio_explorer_prototype/` for if the account upgrades to PRO.
 
 Not yet released — no PyPI package, DOI, or arXiv preprint. See `PLANNING.md`
 for the full implementation brief and phased plan (HF Space explorer, paper).
@@ -145,5 +156,6 @@ tokentax.pricing.estimate_cost("gpt-4o", n_tokens=1_000_000)
 ## Release checklist
 
 CITATION.cff (done) → full FLORES-200 run + validation against Petrov et al.
-2023 → HF dataset + Space → PyPI → arXiv → Papers with Code → Zenodo →
-seed emails to multilingual-NLP and AI-policy researchers → workshop poster.
+2023 (done) → HF dataset + Space (done) → PyPI → arXiv → Papers with Code →
+Zenodo → seed emails to multilingual-NLP and AI-policy researchers →
+workshop poster.

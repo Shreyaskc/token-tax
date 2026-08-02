@@ -1,0 +1,34 @@
+# Versioned $/token pricing snapshot, kept separate from tokenizer registry
+# so a price change doesn't force re-tokenizing anything.
+#
+# verified: false means these are PLACEHOLDER order-of-magnitude figures,
+# not confirmed against a live provider pricing page. Do not publish a
+# dollar-figure result (e.g. the "cost of a constitution" chart) until this
+# is set to true with last_checked filled in.
+verified: false
+last_checked: null
+models:
+  gpt-4o:
+    input_per_million_usd: 2.50
+    output_per_million_usd: 10.00
+  gpt-4:
+    input_per_million_usd: 30.00
+    output_per_million_usd: 60.00
+  claude:
+    input_per_million_usd: 3.00
+    output_per_million_usd: 15.00
+  llama-3:
+    input_per_million_usd: 0.20
+    output_per_million_usd: 0.20
+  qwen2.5:
+    input_per_million_usd: 0.20
+    output_per_million_usd: 0.20
+  deepseek-v3:
+    input_per_million_usd: 0.27
+    output_per_million_usd: 1.10
+  mistral:
+    input_per_million_usd: 0.20
+    output_per_million_usd: 0.60
+  gemma-2:
+    input_per_million_usd: 0.20
+    output_per_million_usd: 0.20

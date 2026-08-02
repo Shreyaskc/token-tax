@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>tokentax explorer</title>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<style>
+  :root { color-scheme: light dark; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    max-width: 960px; margin: 0 auto; padding: 1.5rem;
+    line-height: 1.5;
+  }
+  h1 { font-size: 1.6rem; margin-bottom: 0.25rem; }
+  .subtitle { color: #666; margin-top: 0; margin-bottom: 1.5rem; }
+  .subtitle a { color: inherit; }
+  .tabs { display: flex; gap: 0.5rem; margin-bottom: 1rem; border-bottom: 1px solid #ccc; }
+  .tab-button {
+    padding: 0.5rem 1rem; border: none; background: none; cursor: pointer;
+    font-size: 1rem; border-bottom: 2px solid transparent;
+  }
+  .tab-button.active { border-bottom: 2px solid #d1495b; font-weight: 600; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+  label { display: block; font-weight: 600; margin-bottom: 0.25rem; margin-top: 0.75rem; }
+  select, input[type="number"] {
+    width: 100%; padding: 0.4rem; font-size: 1rem; box-sizing: border-box;
+  }
+  button.calc-button {
+    margin-top: 1rem; padding: 0.6rem 1.2rem; font-size: 1rem; cursor: pointer;
+    background: #d1495b; color: white; border: none; border-radius: 4px;
+  }
+  #calc-output {
+    margin-top: 1.5rem; padding: 1rem; border: 1px solid #ddd; border-radius: 6px;
+    background: rgba(127, 127, 127, 0.06);
+  }
+  .warning { color: #a15c00; font-size: 0.9rem; }
+  footer { margin-top: 2rem; font-size: 0.85rem; color: #777; }
+  footer a { color: inherit; }
+  #heatmap { width: 100%; }
+</style>
+</head>
+<body>
+
+<h1>tokentax explorer</h1>
+<p class="subtitle">
+  The tokenizer cost penalty across languages — data from
+  <a href="https://huggingface.co/datasets/shreyaskc/tokentax-results-v1">shreyaskc/tokentax-results-v1</a>,
+  code at <a href="https://github.com/Shreyaskc/token-tax">Shreyaskc/token-tax</a>.
+</p>
+
+<div class="tabs">
+  <button class="tab-button active" data-tab="heatmap-tab">Heatmap</button>
+  <button class="tab-button" data-tab="calc-tab">Cost calculator</button>
+</div>
+
+<div id="heatmap-tab" class="tab-panel active">
+  <label for="top-n">Show top N languages by mean premium</label>
+  <input type="range" id="top-n" min="10" max="203" value="40" step="5">
+  <span id="top-n-value">40</span>
+  <div id="heatmap"></div>
+</div>
+
+<div id="calc-tab" class="tab-panel">
+  <p>What does N tokens buy in your language, vs. English?</p>
+  <label for="tokenizer-select">Tokenizer</label>
+  <select id="tokenizer-select"></select>
+
+  <label for="language-select">Language</label>
+  <select id="language-select"></select>
+
+  <label for="tokens-input">Number of tokens</label>
+  <input type="number" id="tokens-input" value="1000000" min="1" step="1">
+
+  <button class="calc-button" id="calc-button">Calculate</button>
+
+  <div id="calc-output"></div>
+</div>
+
+<footer>
+  Premium ratios are computed on FLORES-200 devtest (aligned parallel sentences),
+  with 95% bootstrap confidence intervals via
+  <a href="https://pypi.org/project/evalci/">evalci</a>. Claude is excluded
+  (no downloadable tokenizer). See the
+  <a href="https://github.com/Shreyaskc/token-tax">GitHub repo</a> for
+  methodology, validation against Petrov et al. 2023, and the OPUS
+  domain-robustness check.
+</footer>
+
+<script>
+const LANGUAGE_NAMES = {
+  "shn_Mymr": "Shan", "sat_Olck": "Santali", "dzo_Tibt": "Dzongkha",
+  "ory_Orya": "Odia", "mya_Mymr": "Burmese", "bod_Tibt": "Tibetan",
+  "taq_Tfng": "Tamasheq", "lao_Laoo": "Lao", "tzm_Tfng": "Central Atlas Tamazight",
+  "khm_Khmr": "Khmer", "mal_Mlym": "Malayalam", "sin_Sinh": "Sinhala",
+  "kan_Knda": "Kannada", "kat_Geor": "Georgian", "tel_Telu": "Telugu",
+  "guj_Gujr": "Gujarati", "pan_Guru": "Punjabi", "tam_Taml": "Tamil",
+  "tir_Ethi": "Tigrinya", "amh_Ethi": "Amharic", "hye_Armn": "Armenian",
+  "mni_Beng": "Manipuri", "asm_Beng": "Assamese", "ben_Beng": "Bengali",
+  "uig_Arab": "Uyghur", "ydd_Hebr": "Yiddish", "kbp_Latn": "Kabiye",
+  "mar_Deva": "Marathi", "san_Deva": "Sanskrit", "ckb_Arab": "Central Kurdish",
+  "eng_Latn": "English",
+};
+
+function displayName(code) {
+  return LANGUAGE_NAMES[code] || code;
+}
+function label(code) {
+  const name = LANGUAGE_NAMES[code];
+  return name ? `${code} — ${name}` : code;
+}
+
+let DATA = null;
+let PRICING = null;
+
+async function loadData() {
+  const [dataResp, pricingResp] = await Promise.all([
+    fetch("data.json"), fetch("pricing.json"),
+  ]);
+  DATA = await dataResp.json();
+  PRICING = await pricingResp.json();
+}
+
+function meanPremium(lang) {
+  const entries = Object.values(DATA.languages[lang]);
+  return entries.reduce((sum, e) => sum + e.estimate, 0) / entries.length;
+}
+
+function renderHeatmap(topN) {
+  const languages = Object.keys(DATA.languages)
+    .map((lang) => [lang, meanPremium(lang)])
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, topN)
+    .map(([lang]) => lang);
+
+  const z = languages.map((lang) => DATA.tokenizers.map((tok) => {
+    const entry = DATA.languages[lang][tok];
+    return entry ? entry.estimate : null;
+  }));
+
+  const trace = {
+    z, x: DATA.tokenizers, y: languages.map(label),
+    type: "heatmap", colorscale: "OrRd",
+    colorbar: { title: "premium" },
+    hovertemplate: "%{y}<br>%{x}<br>premium=%{z:.2f}×<extra></extra>",
+  };
+
+  Plotly.newPlot("heatmap", [trace], {
+    title: `Token premium vs. English — top ${topN} languages by mean premium`,
+    xaxis: { title: "tokenizer" }, yaxis: { title: "language", automargin: true },
+    height: Math.max(400, 24 * languages.length),
+    margin: { l: 10, r: 10, t: 40, b: 10 },
+  }, { responsive: true });
+}
+
+function populateCalculatorInputs() {
+  const calcTokenizers = DATA.tokenizers.filter((t) => t in PRICING.models).sort();
+  const tokenizerSelect = document.getElementById("tokenizer-select");
+  tokenizerSelect.innerHTML = calcTokenizers
+    .map((t) => `<option value="${t}">${t}</option>`).join("");
+
+  const languageSelect = document.getElementById("language-select");
+  const languages = Object.keys(DATA.languages).sort();
+  languageSelect.innerHTML = languages
+    .map((l) => `<option value="${l}">${label(l)}</option>`).join("");
+  languageSelect.value = "tam_Taml";
+}
+
+function calculate() {
+  const tokenizer = document.getElementById("tokenizer-select").value;
+  const language = document.getElementById("language-select").value;
+  const nTokens = parseInt(document.getElementById("tokens-input").value, 10);
+  const output = document.getElementById("calc-output");
+
+  const entry = DATA.languages[language] && DATA.languages[language][tokenizer];
+  if (!entry) {
+    output.innerHTML = `<p>No data for <code>${tokenizer}</code> × ${displayName(language)}.</p>`;
+    return;
+  }
+
+  const name = displayName(language);
+  const pricePerToken = PRICING.models[tokenizer].input_per_million_usd / 1_000_000;
+  const costThisLanguage = nTokens * pricePerToken;
+  const costEnglishEquivalent = costThisLanguage / entry.estimate;
+
+  const verifiedNote = PRICING.verified ? "" : `
+    <p class="warning">⚠️ Pricing is an unverified placeholder snapshot — see the source repo's
+    <code>pricing.yaml</code>. Treat dollar figures as illustrative, not citable.</p>`;
+
+  output.innerHTML = `
+    <h3>${name} on <code>${tokenizer}</code></h3>
+    <p><strong>Premium ratio:</strong> ${entry.estimate.toFixed(2)}× (95% CI
+       [${entry.lower.toFixed(2)}, ${entry.upper.toFixed(2)}]) — the same content
+       costs ${entry.estimate.toFixed(2)}× as many tokens as English.</p>
+    <p><strong>${nTokens.toLocaleString()} tokens of ${name} text</strong> costs an
+       estimated <strong>$${costThisLanguage.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong>
+       at <code>${tokenizer}</code>'s input-token price
+       ($${PRICING.models[tokenizer].input_per_million_usd.toFixed(2)} / 1M tokens).</p>
+    <p>The <em>same content</em>, written in English, would cost roughly
+       <strong>$${costEnglishEquivalent.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong>
+       — ${name} speakers pay a <strong>${entry.estimate.toFixed(2)}× tax</strong> for identical meaning.</p>
+    ${verifiedNote}
+  `;
+}
+
+function setupTabs() {
+  document.querySelectorAll(".tab-button").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tab-button").forEach((b) => b.classList.remove("active"));
+      document.querySelectorAll(".tab-panel").forEach((p) => p.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById(btn.dataset.tab).classList.add("active");
+    });
+  });
+}
+
+async function main() {
+  setupTabs();
+  await loadData();
+
+  renderHeatmap(40);
+  const topNInput = document.getElementById("top-n");
+  const topNValue = document.getElementById("top-n-value");
+  topNInput.addEventListener("input", () => {
+    topNValue.textContent = topNInput.value;
+    renderHeatmap(parseInt(topNInput.value, 10));
+  });
+
+  populateCalculatorInputs();
+  document.getElementById("calc-button").addEventListener("click", calculate);
+}
+
+main();
+</script>
+</body>
+</html>
