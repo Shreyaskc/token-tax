@@ -175,5 +175,8 @@ tokentax.pricing.estimate_cost("gpt-4o", n_tokens=1_000_000)
 
 CITATION.cff (done) → full FLORES-200 run + validation against Petrov et al.
 2023 (done) → HF dataset + Space (done) → PyPI (done) → arXiv (drafted,
-submission pending) → Papers with Code → Zenodo → seed emails to
+submission pending) → **peer-reviewed submission** (ACL Rolling Review →
+Findings of ACL/EMNLP/NAACL, COLING, or a fitting workshop — MRL, LoResMT,
+VarDial, ComputEL; arXiv alone does not satisfy EB-1A's "scholarly articles"
+criterion, peer review does) → Papers with Code → Zenodo → seed emails to
 multilingual-NLP and AI-policy researchers → workshop poster.
