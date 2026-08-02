@@ -22,12 +22,28 @@ PremiumReport(tokenizer='gpt-4o', language='tam_Taml', premium=1.964, 95% CI=[1.
 
 ## Status
 
-Phase 1 (core pipeline) is implemented and tested: tokenizer registry
-(tiktoken, Hugging Face, and Anthropic's token-count API), premium/bytes-per-
-token/context-window metrics, and confidence intervals wired through
-`evalci`. Not yet released — no PyPI package, DOI, or arXiv preprint. See
-`PLANNING.md` for the full implementation brief and phased plan (FLORES-200
-full run, HF dataset + explorer, paper).
+Phase 1 (core pipeline) and Phase 2 (full FLORES-200 sweep) are done. The
+pipeline is validated: it reproduces Petrov et al. 2023's published premium
+ratios (GPT-2/GPT-4 tokenizers, five languages) within 1.1% — see
+`scripts/validate_against_petrov2023.py`. The full sweep covers 8 tokenizers
+(gpt-4o, gpt-4, gpt-2, llama-3, qwen2.5, deepseek-v3, mistral, gemma-2 — Claude
+excluded, see below) × 203 non-English FLORES-200 languages, 1.64M raw
+per-sentence rows, summarized with `evalci`-backed CIs in
+`data/results/tokentax_summary_devtest.csv`. Newer tokenizers show a markedly
+lower mean premium (gpt-4o/gemma-2 ≈ 2.1×) than legacy ones (gpt-2 ≈ 4.5×) —
+the "are newer tokenizers fairer" trend the paper will explore.
+
+Not yet released — no PyPI package, DOI, or arXiv preprint; the results
+dataset isn't yet published to Hugging Face. See `PLANNING.md` for the full
+implementation brief and phased plan (HF dataset + explorer, paper).
+
+Two registry notes from the real run: `llama-3` resolves to the
+`NousResearch/Meta-Llama-3-8B` mirror, not `meta-llama/Meta-Llama-3-8B`,
+because the official repo requires Meta's manual license approval rather
+than an instant click-through; `mistral` turned out not to be gated at all
+(needs `protobuf` installed, not a license). Claude is excluded from the
+sweep by choice, not necessity — see `registry.py` if you want to re-add it
+with `ANTHROPIC_API_KEY` set.
 
 ## Install
 

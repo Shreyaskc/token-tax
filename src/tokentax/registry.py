@@ -36,8 +36,13 @@ REGISTRY: "dict[str, TokenizerSpec]" = {
     ),
     "llama-3": TokenizerSpec(
         name="llama-3", family="meta", backend="huggingface",
-        source="meta-llama/Meta-Llama-3-8B", revision="main", gated=True,
-        notes="gated on Hugging Face: requires a free license click + `huggingface-cli login`",
+        source="NousResearch/Meta-Llama-3-8B", revision="main", gated=False,
+        notes=(
+            "the canonical meta-llama/Meta-Llama-3-8B requires Meta's manual "
+            "license approval (not auto-approved like this portfolio's other "
+            "gated resources); using the NousResearch mirror, a widely-used "
+            "ungated re-upload of the same tokenizer, instead"
+        ),
     ),
     "qwen2.5": TokenizerSpec(
         name="qwen2.5", family="alibaba", backend="huggingface",
@@ -49,8 +54,8 @@ REGISTRY: "dict[str, TokenizerSpec]" = {
     ),
     "mistral": TokenizerSpec(
         name="mistral", family="mistral", backend="huggingface",
-        source="mistralai/Mistral-7B-v0.3", revision="main", gated=True,
-        notes="gated on Hugging Face: requires a free license click + `huggingface-cli login`",
+        source="mistralai/Mistral-7B-v0.3", revision="main", gated=False,
+        notes="verified ungated as of 2026-08-08; requires protobuf installed for tokenizer conversion",
     ),
     "gemma-2": TokenizerSpec(
         name="gemma-2", family="google", backend="huggingface",

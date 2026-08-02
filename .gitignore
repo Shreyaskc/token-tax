@@ -10,4 +10,5 @@ dist/
 PLANNING.md
 data/cache/*
 !data/cache/.gitkeep
-data/results/
+data/results/*
+!data/results/tokentax_summary_devtest.csv
