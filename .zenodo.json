@@ -1,0 +1,20 @@
+{
+  "title": "tokentax: The Tokenizer Cost Penalty Across Languages",
+  "description": "Measures the tokenization premium, effective context-window shrinkage, and API cost multiplier for major LLM tokenizers across 100+ languages on parallel corpora (FLORES-200, OPUS). Ships a versioned results dataset and a small library to compute the tax for any custom tokenizer.",
+  "upload_type": "software",
+  "license": "MIT",
+  "creators": [
+    {
+      "name": "Chandrahas, Shreyas K"
+    }
+  ],
+  "keywords": [
+    "llm",
+    "tokenization",
+    "multilingual-nlp",
+    "fairness",
+    "benchmarking",
+    "cost-analysis"
+  ],
+  "access_right": "open"
+}

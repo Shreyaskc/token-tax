@@ -1,0 +1,52 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tokentax"
+version = "0.1.0"
+description = "The tokenizer cost penalty across 100+ languages"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.9"
+authors = [
+    { name = "Shreyas K Chandrahas" },
+]
+keywords = ["llm", "tokenization", "multilingual-nlp", "fairness", "benchmarking", "cost-analysis"]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "numpy",
+    "pandas",
+    "pyyaml",
+    "evalci",
+    "tiktoken",
+    "transformers",
+    "sentencepiece",
+    "huggingface_hub",
+]
+
+[project.urls]
+Homepage = "https://github.com/Shreyaskc/token-tax"
+Repository = "https://github.com/Shreyaskc/token-tax"
+Issues = "https://github.com/Shreyaskc/token-tax/issues"
+
+[project.optional-dependencies]
+test = ["pytest"]
+corpora = ["datasets"]
+claude = ["anthropic"]
+
+[project.scripts]
+tokentax = "tokentax.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+tokentax = ["pricing.yaml"]

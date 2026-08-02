@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - given-names: "Shreyas K"
+    family-names: Chandrahas
+    alias: Shreyaskc
+title: "tokentax — The Tokenizer Cost Penalty Across Languages"
+version: 0.1.0
+repository-code: "https://github.com/Shreyaskc/token-tax"
+license: MIT
