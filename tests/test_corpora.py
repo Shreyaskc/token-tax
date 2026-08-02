@@ -29,3 +29,13 @@ def test_load_flores200_requires_explicit_languages():
 def test_flores200_languages_are_unique_and_include_english():
     assert len(corpora.FLORES200_LANGUAGES) == len(set(corpora.FLORES200_LANGUAGES)) == 204
     assert "eng_Latn" in corpora.FLORES200_LANGUAGES
+
+
+def test_load_opus100_pair_unmapped_language_raises():
+    with pytest.raises(KeyError):
+        corpora.load_opus100_pair("not_a_real_lang")
+
+
+def test_load_bible_corpus_pair_unmapped_language_raises():
+    with pytest.raises(KeyError):
+        corpora.load_bible_corpus_pair("not_a_real_lang")

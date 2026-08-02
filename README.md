@@ -33,6 +33,21 @@ per-sentence rows, summarized with `evalci`-backed CIs in
 lower mean premium (gpt-4o/gemma-2 ≈ 2.1×) than legacy ones (gpt-2 ≈ 4.5×) —
 the "are newer tokenizers fairer" trend the paper will explore.
 
+The OPUS domain-robustness check (`scripts/run_opus_domain_check.py`) is also
+done, for the top 30 languages by mean FLORES premium: 21/30 have a mapped
+second-domain corpus (`Helsinki-NLP/opus-100` and/or
+`davidstap/biblenlp-corpus-mmteb`, religious register); the other 9 (Shan,
+Santali, Dzongkha, Tamasheq, Central Atlas Tamazight, Lao, Tigrinya, Manipuri,
+Kabiyè) have no modern, ungated, non-loading-script parallel corpus available
+for a second domain at all — that gap is itself a finding (the languages with
+the highest token tax also have the least data to cross-validate it). Across
+264 (language, domain, tokenizer) comparisons, median relative difference
+from the FLORES estimate is 14% — the premium mostly replicates across
+register, with some corpus-specific outliers worth a caveat in the paper
+(Kannada on OPUS-100 diverges up to 106% for gpt-4o; Uyghur and Sanskrit's
+Bible-corpus pairings diverge 44–72%, likely small/idiosyncratic samples in
+those specific files). Results in `data/results/opus_domain_check.csv`.
+
 Not yet released — no PyPI package, DOI, or arXiv preprint; the results
 dataset isn't yet published to Hugging Face. See `PLANNING.md` for the full
 implementation brief and phased plan (HF dataset + explorer, paper).

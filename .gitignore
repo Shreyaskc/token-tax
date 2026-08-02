@@ -12,3 +12,4 @@ data/cache/*
 !data/cache/.gitkeep
 data/results/*
 !data/results/tokentax_summary_devtest.csv
+!data/results/opus_domain_check.csv

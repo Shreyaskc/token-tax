@@ -16,10 +16,17 @@ manual review. One-time setup:
     2. `huggingface-cli login` locally (or set `HF_TOKEN`).
 
 Column names below (`id`, `sentence`) follow FLORES's long-standing public
-convention; they are unverified against a live pull in this environment
-because the gate blocks unauthenticated schema inspection. `load_flores200`
-fails loudly with the columns it actually saw if this assumption is wrong —
-fix `_SENTENCE_COLS`/`_ID_COLS` below once you've pulled it once.
+convention and are now verified against a live pull (2026-08-08): the schema
+is `{id, URL, domain, topic, has_image, has_hyperlink, sentence}`.
+
+For the Phase 2 domain-robustness check, `load_opus100` and
+`load_bible_corpus` pull a second, non-FLORES-domain parallel corpus for
+languages where one exists — FLORES is encyclopedic/news-register text, and
+a premium ratio that only replicates on that one register is a weaker claim
+than one that holds on subtitles/religious text too. Neither source covers
+every language: see PLANNING.md's domain-robustness notes for the coverage
+gap on very low-resource scripts (fewer accessible parallel corpora is
+itself part of the token-tax story).
 """
 from __future__ import annotations
 
@@ -123,6 +130,102 @@ def load_flores200(
             df.to_parquet(cache_path)
         out[lang] = _normalize(df, lang)
     return out
+
+
+# flores_code -> Helsinki-NLP/opus-100 config name. Coverage is partial: many
+# very-low-resource FLORES languages (e.g. Shan, Santali, Tamasheq) have no
+# OPUS-100 pairing at all. Only add an entry once you've confirmed the config
+# exists in the dataset's file listing.
+OPUS100_LANG_MAP = {
+    "dzo_Tibt": "dz-en", "ory_Orya": "en-or", "mya_Mymr": "en-my", "khm_Khmr": "en-km",
+    "mal_Mlym": "en-ml", "sin_Sinh": "en-si", "kan_Knda": "en-kn", "kat_Geor": "en-ka",
+    "tel_Telu": "en-te", "guj_Gujr": "en-gu", "pan_Guru": "en-pa", "tam_Taml": "en-ta",
+    "amh_Ethi": "am-en", "hye_Armn": "en-hy", "asm_Beng": "as-en", "ben_Beng": "bn-en",
+    "uig_Arab": "en-ug", "ydd_Hebr": "en-yi", "mar_Deva": "en-mr",
+}
+
+# flores_code -> davidstap/biblenlp-corpus-mmteb language code (files are at
+# data/eng-{code}/{split}.json). Also partial coverage, but reaches a couple
+# of languages OPUS-100 doesn't (Sanskrit, Central Kurdish).
+BIBLE_LANG_MAP = {
+    "ory_Orya": "ory", "mya_Mymr": "mya", "mal_Mlym": "mal", "kan_Knda": "kan",
+    "tel_Telu": "tel", "guj_Gujr": "guj", "pan_Guru": "pan", "tam_Taml": "tam",
+    "asm_Beng": "asm", "ben_Beng": "ben", "uig_Arab": "uig", "mar_Deva": "mar",
+    "san_Deva": "san", "ckb_Arab": "ckb",
+}
+
+
+def load_opus100_pair(flores_lang: str, split: str = "test", cache_dir: Path = CACHE_DIR):
+    """(lang_sentences, english_sentences) aligned pair for one FLORES-coded
+    language from `Helsinki-NLP/opus-100` — a mixed-domain (not encyclopedic)
+    corpus, for the Phase 2 domain-robustness check.
+    """
+    try:
+        config = OPUS100_LANG_MAP[flores_lang]
+    except KeyError:
+        raise KeyError(
+            f"no OPUS-100 pairing for {flores_lang!r}; available: {sorted(OPUS100_LANG_MAP)}"
+        ) from None
+
+    import pandas as pd
+
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    cache_path = cache_dir / f"opus100_{split}_{flores_lang}.parquet"
+    if cache_path.exists():
+        df = pd.read_parquet(cache_path)
+    else:
+        from datasets import load_dataset
+
+        try:
+            ds = load_dataset("Helsinki-NLP/opus-100", config, split=split)
+        except ValueError as e:
+            # a handful of opus-100 pairs (e.g. dz-en, en-hy) only ship a
+            # "train" split, no "test" — fall back rather than fail the pair.
+            if "Unknown split" not in str(e):
+                raise
+            ds = load_dataset("Helsinki-NLP/opus-100", config, split="train")
+        df = pd.DataFrame([row["translation"] for row in ds])
+        df.to_parquet(cache_path)
+
+    left, right = config.split("-")
+    other_code = right if left == "en" else left
+    return df[other_code].tolist(), df["en"].tolist()
+
+
+def load_bible_corpus_pair(flores_lang: str, split: str = "test", cache_dir: Path = CACHE_DIR):
+    """(lang_sentences, english_sentences) aligned pair for one FLORES-coded
+    language from `davidstap/biblenlp-corpus-mmteb` — religious-register text,
+    for the Phase 2 domain-robustness check.
+    """
+    try:
+        code = BIBLE_LANG_MAP[flores_lang]
+    except KeyError:
+        raise KeyError(
+            f"no Bible-corpus pairing for {flores_lang!r}; available: {sorted(BIBLE_LANG_MAP)}"
+        ) from None
+
+    import pandas as pd
+
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    cache_path = cache_dir / f"bible_{split}_{flores_lang}.parquet"
+    if cache_path.exists():
+        df = pd.read_parquet(cache_path)
+    else:
+        import json
+
+        from huggingface_hub import hf_hub_download
+
+        path = hf_hub_download(
+            repo_id="davidstap/biblenlp-corpus-mmteb",
+            filename=f"data/eng-{code}/{split}.json",
+            repo_type="dataset",
+        )
+        with open(path) as f:
+            rows = [json.loads(line) for line in f if line.strip()]
+        df = pd.DataFrame(rows)
+        df.to_parquet(cache_path)
+
+    return df[code].tolist(), df["eng"].tolist()
 
 
 # A tiny, hand-written parallel corpus for tests: no network, no gate, no
