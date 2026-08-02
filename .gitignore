@@ -10,3 +10,4 @@ dist/
 PLANNING.md
 data/cache/*
 !data/cache/.gitkeep
+data/results/

@@ -32,6 +32,35 @@ class PremiumReport:
         )
 
 
+def premium_report_from_ratios(
+    ratios,
+    tokenizer_name: str,
+    language: str,
+    confidence: float = 0.95,
+    n_resamples: int = 9999,
+    random_state: Optional[int] = None,
+) -> PremiumReport:
+    """Bootstrap CI on already-computed per-sentence premium ratios (e.g. read
+    back from a cached raw-results parquet, rather than re-tokenizing).
+    """
+    result = evalci.ci(
+        ratios,
+        method="bootstrap",
+        confidence=confidence,
+        n_resamples=n_resamples,
+        random_state=random_state,
+    )
+    return PremiumReport(
+        tokenizer=tokenizer_name,
+        language=language,
+        estimate=result.estimate,
+        lower=result.lower,
+        upper=result.upper,
+        confidence=result.confidence,
+        n=result.n,
+    )
+
+
 def premium_report(
     tokenizer: Tokenizer,
     sentences_lang: List[str],
@@ -45,21 +74,13 @@ def premium_report(
     (tokenizer, language) pair, computed over aligned parallel sentences.
     """
     ratios = metrics.premium_ratios(tokenizer, sentences_lang, sentences_en)
-    result = evalci.ci(
+    return premium_report_from_ratios(
         ratios,
-        method="bootstrap",
+        tokenizer.spec.name,
+        language,
         confidence=confidence,
         n_resamples=n_resamples,
         random_state=random_state,
-    )
-    return PremiumReport(
-        tokenizer=tokenizer.spec.name,
-        language=language,
-        estimate=result.estimate,
-        lower=result.lower,
-        upper=result.upper,
-        confidence=result.confidence,
-        n=result.n,
     )
 
 

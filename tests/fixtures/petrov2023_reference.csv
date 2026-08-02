@@ -1,0 +1,21 @@
+# Reference premium ratios derived from Petrov et al. 2023, "Language Model
+# Tokenizers Introduce Unfairness Between Languages" (NeurIPS 2023,
+# arXiv:2305.15425), computed from their published per-language total token
+# counts over FLORES-200 devtest:
+# https://github.com/AleksandarPetrov/tokenization-fairness/blob/main/assets/tokenization_lengths_validated.csv
+#
+# premium = language_total_tokens / english_total_tokens for the same
+# tokenizer, i.e. ratio-of-sums over the full devtest set (not a mean of
+# per-sentence ratios) — reproduce this way for a fair comparison.
+# tokentax_tokenizer maps to this repo's registry.py name.
+flores_code,petrov_language,tokentax_tokenizer,premium_ratio
+amh_Ethi,Amharic,gpt-2,7.787
+amh_Ethi,Amharic,gpt-4,7.678
+tam_Taml,Tamil,gpt-2,15.582
+tam_Taml,Tamil,gpt-4,7.651
+mya_Mymr,Burmese,gpt-2,16.891
+mya_Mymr,Burmese,gpt-4,11.702
+hin_Deva,Hindi,gpt-2,7.459
+hin_Deva,Hindi,gpt-4,4.794
+arb_Arab,Standard Arabic,gpt-2,4.400
+arb_Arab,Standard Arabic,gpt-4,3.037

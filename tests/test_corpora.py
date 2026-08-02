@@ -24,3 +24,8 @@ def test_load_toy_corpus_returns_copy():
 def test_load_flores200_requires_explicit_languages():
     with pytest.raises(ValueError):
         corpora.load_flores200(languages=None)
+
+
+def test_flores200_languages_are_unique_and_include_english():
+    assert len(corpora.FLORES200_LANGUAGES) == len(set(corpora.FLORES200_LANGUAGES)) == 204
+    assert "eng_Latn" in corpora.FLORES200_LANGUAGES

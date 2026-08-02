@@ -30,6 +30,10 @@ REGISTRY: "dict[str, TokenizerSpec]" = {
         name="gpt-4", family="openai", backend="tiktoken", source="cl100k_base",
         notes="legacy vocabulary, kept for the Petrov et al. 2023 reproduction check",
     ),
+    "gpt-2": TokenizerSpec(
+        name="gpt-2", family="openai", backend="tiktoken", source="gpt2",
+        notes="legacy vocabulary, kept for the Petrov et al. 2023 reproduction check",
+    ),
     "llama-3": TokenizerSpec(
         name="llama-3", family="meta", backend="huggingface",
         source="meta-llama/Meta-Llama-3-8B", revision="main", gated=True,
