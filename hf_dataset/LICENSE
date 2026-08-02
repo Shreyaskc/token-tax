@@ -6,7 +6,9 @@ No original sentence text from the source parallel corpora is redistributed
 here; only aggregate/per-sentence statistics computed from them. The source
 corpora carry their own licenses — see the dataset card for attribution:
 - FLORES-200 (facebook/flores): CC-BY-SA-4.0
-- OPUS-100 (Helsinki-NLP/opus-100): mixed per-source licenses, see
+- OPUS-100 (Helsinki-NLP/opus-100): license unspecified on the dataset
+  card ("unknown"), varying by the underlying OPUS source corpus; see
   https://huggingface.co/datasets/Helsinki-NLP/opus-100
-- Bible corpus (davidstap/biblenlp-corpus-mmteb): see
+- eBible Corpus (davidstap/biblenlp-corpus-mmteb): CC-BY-4.0 or other
+  per-translation terms, varying by contributing translation; see
   https://huggingface.co/datasets/davidstap/biblenlp-corpus-mmteb
