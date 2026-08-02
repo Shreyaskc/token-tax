@@ -1,4 +1,4 @@
-\begin{thebibliography}{8}
+\begin{thebibliography}{6}
 \providecommand{\natexlab}[1]{#1}
 \providecommand{\url}[1]{\texttt{#1}}
 \expandafter\ifx\csname urlstyle\endcsname\relax
@@ -19,18 +19,6 @@ Shreyas~K Chandrahas.
 \newblock evalci: A python library for statistically rigorous comparison of
   language model evaluations.
 \newblock \emph{arXiv preprint arXiv:2607.04429}, 2026.
-
-\bibitem[Harris et~al.(2020)Harris, Millman, van~der Walt,
-  et~al.]{harris2020numpy}
-Charles~R. Harris, K.~Jarrod Millman, St{\'e}fan~J. van~der Walt, et~al.
-\newblock Array programming with numpy.
-\newblock \emph{Nature}, 585:\penalty0 357--362, 2020.
-
-\bibitem[McKinney(2010)]{mckinney2010pandas}
-Wes McKinney.
-\newblock Data structures for statistical computing in python.
-\newblock In \emph{Proceedings of the 9th Python in Science Conference}, pages
-  56--61, 2010.
 
 \bibitem[{NLLB Team} et~al.(2022){NLLB Team}, Costa-juss\`{a}, Cross,
   {\c{C}}elebi, Elbayad, Heafield, Heffernan, Kalbassi, Lam, Licht, Maillard,

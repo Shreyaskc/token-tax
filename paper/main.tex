@@ -43,18 +43,17 @@ FLORES-200 languages \citep{nllbteam2022}. The pipeline reproduces
 \citeauthor{petrov2023}'s published GPT-2/GPT-4 premium ratios within 1.1\%
 relative error on five languages, a direct validation against prior work
 rather than only internal self-consistency. Across the full sweep, mean
-premium ranges from 2.13$\times$ (Gemma-2) to 4.48$\times$ (GPT-2) --
-tokenizers released in 2024 uniformly show a lower mean premium than GPT-2
-(2019) and GPT-4's cl100k\_base (2022), consistent with vocabulary
-enlargement and more diverse pretraining data, though vocabulary size and
-training-corpus composition are confounded in this comparison and we do not
-claim to isolate their individual contribution. A domain-robustness check
-against a second, non-encyclopedic corpus (mixed-domain OPUS-100 text and/or
-a Bible-translation corpus) for the 30 highest-premium languages finds the
-premium replicates within a median 14\% across 264 (language, tokenizer,
-domain) comparisons where a second corpus exists at all -- but 9 of those 30
-languages have no modern, ungated parallel corpus available on Hugging Face
-for a second domain, a scarcity that is itself part of the token-tax story.
+premium ranges from 2.13$\times$ (Gemma-2) to 4.48$\times$ (GPT-2). Every
+tokenizer released in 2024 shows a lower mean premium than GPT-2 (2019) or
+GPT-4's cl100k\_base (2022) -- consistent with larger vocabularies and more
+linguistically diverse pretraining data, though we do not claim to isolate
+which factor drives it. A domain-robustness check against a second,
+non-encyclopedic corpus (mixed-domain OPUS-100 text and/or a
+Bible-translation corpus) finds the premium replicates within a median 14\%
+across 264 comparisons for the 30 highest-premium languages -- but 9 of
+those 30 have no modern, ungated parallel corpus available on Hugging Face
+for a second domain at all, a scarcity that is itself part of the
+token-tax story.
 \texttt{tokentax} is available at \url{https://pypi.org/project/tokentax/}
 (source: \url{https://github.com/Shreyaskc/token-tax}), with the full
 results dataset and an interactive explorer at
@@ -141,10 +140,13 @@ sentences, professionally translated in parallel into 200+ languages,
 covering 203 languages with an English pairing in our sweep. FLORES-200 is
 gated on Hugging Face (a free, instant license click, not a manual review).
 
-\paragraph{Tokenizers.} We study 8 tokenizers: OpenAI's o200k\_base (GPT-4o)
-and cl100k\_base (GPT-4), and the legacy GPT-2 vocabulary (kept only for the
-validation in Section~\ref{sec:validation}); Meta's Llama 3; Alibaba's
-Qwen2.5; DeepSeek-V3; Mistral (v0.3); and Google's Gemma-2. Two deviations
+\paragraph{Tokenizers.} We study 8 tokenizers, loaded via \texttt{tiktoken}
+for OpenAI vocabularies and Hugging Face \texttt{transformers}
+\citep{wolf2020transformers} for every open-weight one: OpenAI's
+o200k\_base (GPT-4o) and cl100k\_base (GPT-4), and the legacy GPT-2
+vocabulary (kept only for the validation in Section~\ref{sec:validation});
+Meta's Llama 3; Alibaba's Qwen2.5; DeepSeek-V3; Mistral (v0.3); and
+Google's Gemma-2. Two deviations
 from the obvious choice, both discovered by actually running the pipeline
 rather than assumed in advance: \texttt{meta-llama/Meta-Llama-3-8B} requires
 Meta's manual license approval rather than an instant click-through, so our
@@ -166,12 +168,6 @@ percentile bootstrap 95\% confidence interval over the 1{,}012 per-sentence
 ratios, computed by \texttt{evalci.ci(method="bootstrap")}
 \citep{chandrahas2026evalci} -- not reimplemented, per this project's
 cross-artifact reuse policy.
-
-\paragraph{Implementation.} \texttt{tokentax} is a pure-Python library
-(\texttt{numpy}, \texttt{pandas} \citep{harris2020numpy,mckinney2010pandas}),
-loading tokenizers via \texttt{tiktoken} for OpenAI vocabularies and
-Hugging Face \texttt{transformers} \citep{wolf2020transformers} for every
-open-weight one.
 
 \section{Validation Against Prior Work}
 \label{sec:validation}
@@ -404,15 +400,15 @@ integration runs the test suite across Python 3.9--3.12 on every push.
 
 The token tax is not a 2023 finding that has since been fixed: it persists
 in every tokenizer we measured, ranging from 1.48$\times$ to over
-19$\times$, and even the two lowest-mean-premium 2024-era vocabularies
+19$\times$. Even the two lowest-mean-premium 2024-era vocabularies
 (Gemma-2, GPT-4o) still charge Georgian, Kannada, or Malayalam speakers
-roughly 2--4$\times$ English's rate for identical content -- and a
-same-generation vocabulary trained differently (Qwen2.5) charges those same
-three languages 5--7$\times$, underscoring that vocabulary design choices,
-not just release date, drive the remaining gap. What has changed is which
+roughly 2--4$\times$ English's rate for identical content. A
+same-generation vocabulary trained differently (Qwen2.5) charges those
+same three languages 5--7$\times$: vocabulary design choices, not just
+release date, drive the remaining gap. What has changed is which
 vocabulary a researcher or policymaker should cite a number from -- and
-that number will keep
-changing. \texttt{tokentax} is built to be re-run, not re-derived: the
+that number will keep changing. \texttt{tokentax} is built to be re-run,
+not re-derived: the
 measurement suite, the versioned dataset, and the explorer are designed so
 that the next tokenizer release gets a new, citable number within days,
 not another ad hoc re-implementation of \citeauthor{petrov2023}'s original
