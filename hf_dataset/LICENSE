@@ -1,0 +1,12 @@
+This dataset — the derived statistics only (token counts, premium ratios,
+confidence intervals) — is released under CC0 1.0 Universal (Public Domain
+Dedication). Full legal text: https://creativecommons.org/publicdomain/zero/1.0/legalcode
+
+No original sentence text from the source parallel corpora is redistributed
+here; only aggregate/per-sentence statistics computed from them. The source
+corpora carry their own licenses — see the dataset card for attribution:
+- FLORES-200 (facebook/flores): CC-BY-SA-4.0
+- OPUS-100 (Helsinki-NLP/opus-100): mixed per-source licenses, see
+  https://huggingface.co/datasets/Helsinki-NLP/opus-100
+- Bible corpus (davidstap/biblenlp-corpus-mmteb): see
+  https://huggingface.co/datasets/davidstap/biblenlp-corpus-mmteb

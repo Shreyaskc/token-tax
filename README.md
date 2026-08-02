@@ -48,9 +48,16 @@ register, with some corpus-specific outliers worth a caveat in the paper
 Bible-corpus pairings diverge 44–72%, likely small/idiosyncratic samples in
 those specific files). Results in `data/results/opus_domain_check.csv`.
 
-Not yet released — no PyPI package, DOI, or arXiv preprint; the results
-dataset isn't yet published to Hugging Face. See `PLANNING.md` for the full
-implementation brief and phased plan (HF dataset + explorer, paper).
+**Phase 3 (results dataset) is published:**
+[`shreyaskc/tokentax-results-v1`](https://huggingface.co/datasets/shreyaskc/tokentax-results-v1)
+on Hugging Face — `flores200_summary.parquet` (the CI-backed long-format
+table), `flores200_raw.parquet` (1.64M per-sentence rows), and
+`opus_domain_check.parquet`, under CC0 for the derived statistics (no source
+sentence text is redistributed). Re-publish with
+`scripts/publish_hf_dataset.py`.
+
+Not yet released — no PyPI package, DOI, or arXiv preprint. See `PLANNING.md`
+for the full implementation brief and phased plan (HF Space explorer, paper).
 
 Two registry notes from the real run: `llama-3` resolves to the
 `NousResearch/Meta-Llama-3-8B` mirror, not `meta-llama/Meta-Llama-3-8B`,
