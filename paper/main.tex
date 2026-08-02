@@ -1,0 +1,416 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{natbib}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{lmodern}
+\usepackage{microtype}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  columns=fullflexible,
+  breaklines=true,
+  frame=single,
+  backgroundcolor=\color{black!3},
+  literate={×}{{$\times$}}1
+}
+
+\title{tokentax: Measuring the Tokenizer Cost Penalty\\ Across 203 Languages}
+\author{Shreyas K Chandrahas}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The same sentence costs 1$\times$ tokens in English but often 5--12$\times$ in
+Shan, Santali, or Dzongkha under current LLM tokenizers, because tokenizer
+vocabularies are trained on English-heavy corpora. \citet{petrov2023} and
+\citet{ahia2023} established this ``token tax'' for 2023-era tokenizers, but
+no maintained, versioned resource reports current numbers for the tokenizers
+actually in production use today. We present \texttt{tokentax}, a
+measurement suite, versioned results dataset, and library that computes the
+token premium, and its 95\% confidence interval via \texttt{evalci}
+\citep{chandrahas2026evalci}, for 8 tokenizers (GPT-4o, GPT-4, GPT-2, Llama
+3, Qwen2.5, DeepSeek-V3, Mistral, Gemma-2) across all 203 non-English
+FLORES-200 languages \citep{nllbteam2022}. The pipeline reproduces
+\citeauthor{petrov2023}'s published GPT-2/GPT-4 premium ratios within 1.1\%
+relative error on five languages, a direct validation against prior work
+rather than only internal self-consistency. Across the full sweep, mean
+premium ranges from 2.13$\times$ (Gemma-2) to 4.48$\times$ (GPT-2) --
+tokenizers released in 2024 uniformly show a lower mean premium than GPT-2
+(2019) and GPT-4's cl100k\_base (2022), consistent with vocabulary
+enlargement and more diverse pretraining data, though vocabulary size and
+training-corpus composition are confounded in this comparison and we do not
+claim to isolate their individual contribution. A domain-robustness check
+against a second, non-encyclopedic corpus (mixed-domain OPUS-100 text and/or
+a Bible-translation corpus) for the 30 highest-premium languages finds the
+premium replicates within a median 14\% across 264 (language, tokenizer,
+domain) comparisons where a second corpus exists at all -- but 9 of those 30
+languages have no modern, ungated parallel corpus available on Hugging Face
+for a second domain, a scarcity that is itself part of the token-tax story.
+\texttt{tokentax} is available at \url{https://pypi.org/project/tokentax/}
+(source: \url{https://github.com/Shreyaskc/token-tax}), with the full
+results dataset and an interactive explorer at
+\url{https://huggingface.co/datasets/shreyaskc/tokentax-results-v1} and
+\url{https://huggingface.co/spaces/shreyaskc/tokentax-explorer}.
+\end{abstract}
+
+\section{Introduction}
+
+Token-based API pricing and fixed context windows mean tokenizer
+inefficiency is a real economic and capability penalty, not a cosmetic one.
+If a language costs $k\times$ as many tokens as English for the same
+content, its speakers pay $k\times$ as much per query, retain $1/k$ as many
+effective few-shot examples in a fixed context window, and hit context
+truncation $k\times$ sooner. \citet{petrov2023} first quantified this
+systematically, finding tokenization-length disparities of up to 15$\times$
+across languages for tokenizers available in 2023; \citet{ahia2023}
+independently showed that OpenAI's commercial API pricing, applied uniformly
+per token, overcharges speakers of many supported languages for equivalent
+utility. \citet{rust2021} showed the same underlying disparity degrades
+downstream monolingual task performance, not just cost.
+
+These are foundational results, but the tokenizers they measured are no
+longer the ones in production use. GPT-2's tokenizer (2019) and cl100k\_base
+(2022, GPT-3.5/GPT-4) have both been superseded by larger, more
+multilingual-aware vocabularies -- OpenAI's o200k\_base (GPT-4o), and
+open-weight vocabularies from Meta, Alibaba, DeepSeek, Mistral, and Google.
+Whether the token tax has actually improved with these newer vocabularies,
+and by how much, is a question every multilingual-fairness paper since 2023
+has had to re-derive ad hoc, because no maintained, versioned, statistically
+rigorous resource reports current numbers. This is precisely the gap a
+living benchmark should fill: the numbers change with every tokenizer
+release, which argues for a re-runnable measurement suite and a versioned
+dataset over a one-off paper.
+
+We present \texttt{tokentax}: (1) a small Python library that computes the
+token premium, bytes/characters-per-token, and effective context-window
+shrinkage for any tokenizer against any parallel corpus, with confidence
+intervals via \texttt{evalci} \citep{chandrahas2026evalci}; (2) a full sweep
+of 8 current tokenizers against all 203 non-English FLORES-200 languages,
+validated by reproducing \citeauthor{petrov2023}'s published numbers; (3) a
+domain-robustness check against a second corpus for the 30 most heavily
+taxed languages; and (4) a versioned results dataset and interactive
+explorer, so the resource stays current as new tokenizers ship.
+
+\section{Related Work}
+
+\citet{petrov2023} is the direct precedent for this work: a systematic study
+of tokenization-length disparity across languages for GPT-2, GPT-3, GPT-4,
+and several open tokenizers of the time, using FLORES-200 as the parallel
+corpus -- the same choice we make, for the same reason (Section~\ref{sec:methods}).
+\citet{ahia2023} took the complementary economic angle, translating token
+counts into actual API dollar costs and utility-per-dollar across 22
+languages, and is the direct precedent for our cost-analysis framing
+(Section~\ref{sec:cost}). \citet{rust2021} showed that a designated
+monolingual tokenizer, not just pretraining data volume, materially affects
+downstream task performance -- the capability-side consequence of the same
+disparity we measure on the cost side. \citet{nllbteam2022} introduced
+FLORES-200, the parallel-sentence corpus this entire line of work, including
+ours, depends on.
+
+\texttt{tokentax}'s contribution relative to this line of work is not a new
+finding about \emph{why} the disparity exists -- that question is settled --
+but a maintained instrument for \emph{how much} it currently is, built to be
+re-run as tokenizers change, with every reported number carrying a
+confidence interval rather than a bare point estimate, and with an explicit
+domain-robustness check rather than a single-corpus measurement.
+
+\section{The \texttt{tokentax} Suite}
+\label{sec:methods}
+
+\paragraph{Premium ratio.} For a tokenizer $T$ and an aligned sentence pair
+$(s_{\mathrm{en}}, s_{\ell})$ expressing the same content in English and
+language $\ell$, the premium ratio is $|T(s_\ell)| / |T(s_{\mathrm{en}})|$,
+where $|T(\cdot)|$ is token count. We compute this only on \emph{aligned
+parallel} sentences, never independent monolingual corpora: only a
+shared-meaning pair makes ``language $\ell$ costs $k\times$ as many tokens as
+English for the same content'' a defensible claim, since monolingual corpora
+in different languages differ in register, sentence length, and content
+independent of tokenization efficiency.
+
+\paragraph{Corpus.} We use FLORES-200 devtest \citep{nllbteam2022}: 1{,}012
+sentences, professionally translated in parallel into 200+ languages,
+covering 203 languages with an English pairing in our sweep. FLORES-200 is
+gated on Hugging Face (a free, instant license click, not a manual review).
+
+\paragraph{Tokenizers.} We study 8 tokenizers: OpenAI's o200k\_base (GPT-4o)
+and cl100k\_base (GPT-4), and the legacy GPT-2 vocabulary (kept only for the
+validation in Section~\ref{sec:validation}); Meta's Llama 3; Alibaba's
+Qwen2.5; DeepSeek-V3; Mistral (v0.3); and Google's Gemma-2. Two deviations
+from the obvious choice, both discovered by actually running the pipeline
+rather than assumed in advance: \texttt{meta-llama/Meta-Llama-3-8B} requires
+Meta's manual license approval rather than an instant click-through, so our
+Llama 3 tokenizer resolves to the widely-used, ungated
+\texttt{NousResearch/Meta-Llama-3-8B} mirror of the identical vocabulary;
+and Mistral's tokenizer turned out not to be gated at all once tested, only
+missing a \texttt{protobuf} runtime dependency. Anthropic's Claude is
+excluded: it has no downloadable tokenizer artifact, only a token-counting
+API endpoint, which would require every user reproducing this dataset to
+hold an API key. Gemma-2's SentencePiece vocabulary is also the closest
+available open proxy for Gemini's tokenizer, which likewise has no public
+artifact; we report it only under the Gemma-2 name and do not present it as
+a Gemini measurement.
+
+\paragraph{Confidence intervals.} Every reported premium ratio is a
+percentile bootstrap 95\% confidence interval over the 1{,}012 per-sentence
+ratios, computed by \texttt{evalci.ci(method="bootstrap")}
+\citep{chandrahas2026evalci} -- not reimplemented, per this project's
+cross-artifact reuse policy.
+
+\paragraph{Implementation.} \texttt{tokentax} is a pure-Python library
+(\texttt{numpy}, \texttt{pandas} \citep{harris2020numpy,mckinney2010pandas}),
+loading tokenizers via \texttt{tiktoken} for OpenAI vocabularies and
+Hugging Face \texttt{transformers} \citep{wolf2020transformers} for every
+open-weight one.
+
+\section{Validation Against Prior Work}
+\label{sec:validation}
+
+Rather than validate only against our own pipeline's internal consistency,
+we reproduce \citeauthor{petrov2023}'s own published per-language token
+totals over FLORES-200 devtest for GPT-2 and GPT-4's cl100k\_base, for five
+languages spanning a range of scripts and premium magnitudes.\footnote{Reference
+values computed from \url{https://github.com/AleksandarPetrov/tokenization-fairness},
+the paper's own released data, as a ratio of total tokens over the full
+devtest set (matching their methodology), not a mean of per-sentence
+ratios.} Table~\ref{tab:validation} shows agreement within 1.1\% relative
+error for every (language, tokenizer) pair -- well inside the 2\% target we
+set before running it, and consistent with the small differences expected
+from FLORES-200 dataset revisions since 2023.
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabular}{lrrrr}
+\toprule
+Language & Tokenizer & Published & Reproduced & Rel.\ error \\
+\midrule
+Amharic         & GPT-2 & 7.787  & 7.702  & 1.1\% \\
+Amharic         & GPT-4 & 7.678  & 7.593  & 1.1\% \\
+Tamil           & GPT-2 & 15.582 & 15.537 & 0.3\% \\
+Tamil           & GPT-4 & 7.651  & 7.644  & 0.1\% \\
+Burmese         & GPT-2 & 16.891 & 16.813 & 0.5\% \\
+Burmese         & GPT-4 & 11.702 & 11.618 & 0.7\% \\
+Hindi           & GPT-2 & 7.459  & 7.413  & 0.6\% \\
+Hindi           & GPT-4 & 4.794  & 4.759  & 0.7\% \\
+Standard Arabic & GPT-2 & 4.400  & 4.358  & 1.0\% \\
+Standard Arabic & GPT-4 & 3.037  & 3.027  & 0.3\% \\
+\bottomrule
+\end{tabular}
+\caption{Reproduction of \citet{petrov2023}'s published premium ratios.
+Maximum relative error 1.1\% across 10 (language, tokenizer) pairs.}
+\label{tab:validation}
+\end{table}
+
+\section{Results}
+
+\subsection{Distribution}
+
+Across 8 tokenizers $\times$ 203 languages (1{,}624 (tokenizer, language)
+pairs), the mean premium is 2.96$\times$, the median 2.14$\times$, and the
+range spans 0.94$\times$ to 19.12$\times$. The single sub-1$\times$ value is
+Mandarin Chinese under DeepSeek-V3's tokenizer (0.94$\times$) -- a genuine
+exception, not noise (the 95\% CI excludes 1), plausibly because a
+vocabulary trained with substantial Chinese-language data can represent
+common multi-character sequences more compactly per token than English
+byte-pair merges do.
+
+\subsection{Which languages are taxed the most}
+
+Figure~\ref{fig:top-languages} shows the 15 languages with the highest mean
+premium across all 8 tokenizers. The pattern is stark: every language above
+6.5$\times$ uses a script with a small digital footprint relative to its
+speaker population -- Shan (Myanmar script variant), Santali (Ol Chiki),
+Dzongkha and Tibetan (Tibetan script), Tamasheq and Tamazight (Tifinagh),
+Lao, Khmer, and several South Asian scripts (Odia, Malayalam, Sinhala,
+Kannada, Telugu). At the opposite end, the 10 lowest-premium languages are mostly Latin-script
+European languages (German, Dutch, Swedish, Norwegian Bokm\aa{}l, Galician,
+Spanish, Portuguese) alongside Indonesian, Pangasinan, and Simplified
+Chinese, ranging 1.48--1.58$\times$ -- close to, but still measurably above,
+English's own baseline.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.85\textwidth]{figures/top_languages.pdf}
+  \caption{15 languages with the highest mean token premium vs.\ English,
+  averaged across all 8 tokenizers in the sweep.}
+  \label{fig:top-languages}
+\end{figure}
+
+\subsection{Newer tokenizers, lower premium}
+
+Figure~\ref{fig:tokenizer-trend} orders the 8 tokenizers by mean premium.
+The four tokenizers released in 2024 with the lowest mean premium
+(Gemma-2, GPT-4o, DeepSeek-V3, Qwen2.5, all $\leq$2.8$\times$) sit
+uniformly below GPT-4's 2022 cl100k\_base (3.42$\times$) and GPT-2's 2019
+vocabulary (4.48$\times$). This is consistent with larger vocabularies and
+more linguistically diverse pretraining corpora across successive tokenizer
+generations, but release year, vocabulary size, and training-corpus
+composition are confounded in a sample of 8 tokenizers, and we do not claim
+to have isolated which factor drives the trend -- only that it holds
+directionally across every 2024-era tokenizer we measured against both
+older baselines.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=0.85\textwidth]{figures/tokenizer_trend.pdf}
+  \caption{Mean token premium by tokenizer, colored by approximate release
+  era of the associated model family (blue: 2019, gray: 2022, red: 2024).
+  Release years reflect the model family's public release, not necessarily
+  the exact date the tokenizer vocabulary itself was frozen.}
+  \label{fig:tokenizer-trend}
+\end{figure}
+
+\subsection{Domain robustness}
+\label{sec:domain-robustness}
+
+FLORES-200 is encyclopedic/news-register text; a premium ratio that only
+replicates on that one register is a weaker claim than one that holds
+across registers. For the 30 languages with the highest mean FLORES premium,
+we additionally measured the premium on a second corpus where one exists:
+mixed-domain OPUS-100 text and/or a Bible-translation corpus (religious
+register), each with its own aligned English pairing (not FLORES's).
+
+Of these 30 languages, 21 have at least one second-domain corpus available;
+the other 9 -- Shan, Santali, Tibetan, Tamasheq, Tamazight, Lao, Tigrinya,
+Manipuri, and Kabiy\`{e} -- have no modern, ungated, actively-maintained
+parallel corpus on Hugging Face for a second domain at all. We report this
+gap explicitly rather than silently narrowing the check to the languages
+that happen to have data: the languages with the highest token tax are, by
+this evidence, also among those with the least available parallel data to
+independently corroborate it, which is itself a relevant fact for
+multilingual-NLP resource allocation.
+
+Across the 264 (language, tokenizer, domain) comparisons where a second
+corpus does exist, the median relative difference from the FLORES estimate
+is 14\% (mean 17\%) -- the premium mostly replicates across register. 23 of
+264 comparisons (8.7\%) diverge by more than 35\%, concentrated in a handful
+of (language, domain) combinations rather than spread evenly: Kannada on
+OPUS-100 (up to 107\% divergence, likely a short, UI-string-heavy test
+split rather than a general finding), and Uyghur and Sanskrit on the Bible
+corpus (44--72\% divergence, plausibly small and register-idiosyncratic
+samples in those specific files). We report these as corpus-specific
+caveats on those particular language/domain pairs, not as evidence against
+the premium ratio generally.
+
+\subsection{Cost analysis}
+\label{sec:cost}
+
+Following \citet{ahia2023}'s framing, Table~\ref{tab:cost} converts premium
+ratios into dollar terms: at GPT-4o's published input-token price
+(\$2.50 per million tokens, a snapshot we mark unverified in our released
+pricing table and re-check before every citation of a dollar figure), the
+same 1-million-token quantity of content costs \$2.50 in English but up to
+\$34.82 in Santali -- a 13.9$\times$ markup for identical meaning, before
+any consideration of the additional latency and context-window cost of the
+extra tokens.
+
+\begin{table}[htbp]
+\centering
+\small
+\begin{tabular}{lrr}
+\toprule
+Language & Premium (GPT-4o) & Cost per 1M-token-equivalent \\
+\midrule
+Santali    & 13.93$\times$ & \$34.82 \\
+Tamasheq   & 10.41$\times$ & \$26.04 \\
+Tamazight  & 10.26$\times$ & \$25.65 \\
+Dzongkha   & 9.22$\times$  & \$23.06 \\
+Lao        & 8.38$\times$  & \$20.94 \\
+Tibetan    & 8.23$\times$  & \$20.56 \\
+Shan       & 8.10$\times$  & \$20.26 \\
+Tigrinya   & 6.05$\times$  & \$15.13 \\
+Amharic    & 5.85$\times$  & \$14.63 \\
+Odia       & 5.05$\times$  & \$12.62 \\
+\midrule
+English (baseline) & 1.00$\times$ & \$2.50 \\
+\bottomrule
+\end{tabular}
+\caption{Cost to process 1 million English-tokens' worth of equivalent
+content, by language, at GPT-4o's published input-token price. Pricing is
+an unverified snapshot; see Limitations.}
+\label{tab:cost}
+\end{table}
+
+\section{Limitations}
+
+Pricing figures (Section~\ref{sec:cost}) are a static, manually-maintained
+snapshot explicitly marked \texttt{verified: false} in the released pricing
+table; the library warns on load until a maintainer confirms current
+provider pricing, and dollar figures should be treated as illustrative of
+magnitude, not as a citable current price. Claude is excluded from every
+result in this paper for the reason given in Section~\ref{sec:methods}, not
+because it is exempt from the phenomenon. The Llama 3 tokenizer is measured
+via an ungated third-party mirror, not Meta's own gated repository, though
+we have no reason to expect the vocabulary differs. Gemma-2 is reported only
+as itself, not as a validated proxy for Gemini's (unpublished) tokenizer.
+The domain-robustness check (Section~\ref{sec:domain-robustness}) covers 21
+of the 30 highest-premium languages, not all 203, and the 9 uncovered
+languages are systematically the most extreme cases, not a random sample --
+so the 14\% median replication figure should not be extrapolated to
+languages outside the 21 actually checked. FLORES-200 devtest is a single
+snapshot of encyclopedic/news-register text; even where a second domain is
+available, both corpora are translations rather than natively-authored
+text, which may itself introduce a shared translationese effect that a
+purely monolingual comparison would not have. Finally, every number in this
+paper reflects the specific tokenizer revisions pinned at measurement time
+(Section~\ref{sec:availability}); tokenizer vocabularies are periodically
+updated by their maintainers, and the versioned dataset, not this PDF, is
+the source of truth for current numbers.
+
+\section{Ethics Statement}
+
+This work is a measurement, not a system: it does not collect, generate, or
+redistribute personal data, and the released dataset contains only token
+counts, premium ratios, and confidence intervals -- never the underlying
+FLORES-200, OPUS-100, or Bible-corpus sentence text, which remain under
+their original sources' own licenses. The motivating concern is fairness:
+speakers of the languages in Table~\ref{tab:cost} and
+Figure~\ref{fig:top-languages} pay materially more for equivalent access to
+commercial language models, a disparity this paper aims to make legible and
+citable rather than to newly create. We are not aware of a plausible
+dual-use or harm pathway specific to this artifact; the intended use is
+informing tokenizer design, pricing-policy discussion, and multilingual-NLP
+methods sections that need a current, citable number.
+
+\section{Availability}
+\label{sec:availability}
+
+\texttt{tokentax} is released under the MIT license (results dataset under
+CC0) and available via \texttt{pip install tokentax}
+(\url{https://pypi.org/project/tokentax/}). Source, the full sweep and
+domain-robustness scripts, and tests are at
+\url{https://github.com/Shreyaskc/token-tax}. The versioned results
+dataset -- 1.64M raw per-sentence rows, the CI-backed summary table, and the
+domain-robustness comparisons -- is at
+\url{https://huggingface.co/datasets/shreyaskc/tokentax-results-v1}, and an
+interactive heatmap and cost calculator at
+\url{https://huggingface.co/spaces/shreyaskc/tokentax-explorer}. Continuous
+integration runs the test suite across Python 3.9--3.12 on every push.
+
+\section{Conclusion}
+
+The token tax is not a 2023 finding that has since been fixed: it persists
+in every tokenizer we measured, ranging from 1.48$\times$ to over
+19$\times$, and even its most improved 2024-era vocabularies still charge
+Georgian, Kannada, or Malayalam speakers roughly 2--3$\times$ English's rate
+for identical content. What has changed is which vocabulary a researcher or
+policymaker should cite a number from -- and that number will keep
+changing. \texttt{tokentax} is built to be re-run, not re-derived: the
+measurement suite, the versioned dataset, and the explorer are designed so
+that the next tokenizer release gets a new, citable number within days,
+not another ad hoc re-implementation of \citeauthor{petrov2023}'s original
+analysis.
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+
+\end{document}

@@ -1,0 +1,69 @@
+\begin{thebibliography}{8}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Ahia et~al.(2023)Ahia, Kumar, Gonen, Kasai, Mortensen, Smith, and
+  Tsvetkov]{ahia2023}
+Orevaoghene Ahia, Sachin Kumar, Hila Gonen, Jungo Kasai, David~R. Mortensen,
+  Noah~A. Smith, and Yulia Tsvetkov.
+\newblock Do all languages cost the same? {T}okenization in the era of
+  commercial language models.
+\newblock In \emph{Proceedings of the 2023 Conference on Empirical Methods in
+  Natural Language Processing (EMNLP)}, pages 9904--9923, 2023.
+
+\bibitem[Chandrahas(2026)]{chandrahas2026evalci}
+Shreyas~K Chandrahas.
+\newblock evalci: A python library for statistically rigorous comparison of
+  language model evaluations.
+\newblock \emph{arXiv preprint arXiv:2607.04429}, 2026.
+
+\bibitem[Harris et~al.(2020)Harris, Millman, van~der Walt,
+  et~al.]{harris2020numpy}
+Charles~R. Harris, K.~Jarrod Millman, St{\'e}fan~J. van~der Walt, et~al.
+\newblock Array programming with numpy.
+\newblock \emph{Nature}, 585:\penalty0 357--362, 2020.
+
+\bibitem[McKinney(2010)]{mckinney2010pandas}
+Wes McKinney.
+\newblock Data structures for statistical computing in python.
+\newblock In \emph{Proceedings of the 9th Python in Science Conference}, pages
+  56--61, 2010.
+
+\bibitem[{NLLB Team} et~al.(2022){NLLB Team}, Costa-juss\`{a}, Cross,
+  {\c{C}}elebi, Elbayad, Heafield, Heffernan, Kalbassi, Lam, Licht, Maillard,
+  et~al.]{nllbteam2022}
+{NLLB Team}, Marta~R. Costa-juss\`{a}, James Cross, Onur {\c{C}}elebi, Maha
+  Elbayad, Kenneth Heafield, Kevin Heffernan, Elahe Kalbassi, Janice Lam,
+  Daniel Licht, Jean Maillard, et~al.
+\newblock No language left behind: Scaling human-centered machine translation.
+\newblock \emph{arXiv preprint arXiv:2207.04672}, 2022.
+
+\bibitem[Petrov et~al.(2023)Petrov, La~Malfa, Torr, and Bibi]{petrov2023}
+Aleksandar Petrov, Emanuele La~Malfa, Philip H.~S. Torr, and Adel Bibi.
+\newblock Language model tokenizers introduce unfairness between languages.
+\newblock In \emph{Advances in Neural Information Processing Systems
+  (NeurIPS)}, 2023.
+\newblock arXiv:2305.15425.
+
+\bibitem[Rust et~al.(2021)Rust, Pfeiffer, Vuli\'{c}, Ruder, and
+  Gurevych]{rust2021}
+Phillip Rust, Jonas Pfeiffer, Ivan Vuli\'{c}, Sebastian Ruder, and Iryna
+  Gurevych.
+\newblock How good is your tokenizer? on the monolingual performance of
+  multilingual language models.
+\newblock In \emph{Proceedings of the 59th Annual Meeting of the Association
+  for Computational Linguistics (ACL)}, 2021.
+
+\bibitem[Wolf et~al.(2020)Wolf, Debut, Sanh, Chaumond, Delangue, Moi, Cistac,
+  Rault, Louf, Funtowicz, et~al.]{wolf2020transformers}
+Thomas Wolf, Lysandre Debut, Victor Sanh, Julien Chaumond, Clement Delangue,
+  Anthony Moi, Pierric Cistac, Tim Rault, R{\'e}mi Louf, Morgan Funtowicz,
+  et~al.
+\newblock Transformers: State-of-the-art natural language processing.
+\newblock In \emph{Proceedings of the 2020 Conference on Empirical Methods in
+  Natural Language Processing: System Demonstrations}, pages 38--45, 2020.
+
+\end{thebibliography}

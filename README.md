@@ -69,8 +69,18 @@ Gradio version (live Hub reads, no rebuild step) sits unpublished at
 `scripts/gradio_explorer_prototype/` for if the account upgrades to PRO.
 
 **Released on PyPI:** [`tokentax`](https://pypi.org/project/tokentax/) 0.1.0.
-Not yet released: DOI, arXiv preprint. See `PLANNING.md` for the full
-implementation brief and phased plan (paper, remaining release checklist).
+
+**Paper drafted:** `paper/main.tex` (8 pages) reproduces Petrov et al. 2023
+within 1.1%, reports the full 8-tokenizer sweep, the domain-robustness
+check, and a cost-analysis table, with an Ethics Statement and Limitations
+section. Not yet submitted to arXiv — that step needs an arXiv account and
+is a manual submission, not something scripted. Regenerate the figures with
+`paper/scripts/make_figures.py` and compile with `pdflatex` →
+`bibtex main` → `pdflatex` × 2 from within `paper/`.
+
+Not yet released: Zenodo DOI. See `PLANNING.md` for the full implementation
+brief and remaining release checklist (Papers with Code, seed emails,
+workshop poster).
 
 Two registry notes from the real run: `llama-3` resolves to the
 `NousResearch/Meta-Llama-3-8B` mirror, not `meta-llama/Meta-Llama-3-8B`,
@@ -164,6 +174,6 @@ tokentax.pricing.estimate_cost("gpt-4o", n_tokens=1_000_000)
 ## Release checklist
 
 CITATION.cff (done) → full FLORES-200 run + validation against Petrov et al.
-2023 (done) → HF dataset + Space (done) → PyPI (done) → arXiv → Papers with
-Code → Zenodo → seed emails to multilingual-NLP and AI-policy researchers →
-workshop poster.
+2023 (done) → HF dataset + Space (done) → PyPI (done) → arXiv (drafted,
+submission pending) → Papers with Code → Zenodo → seed emails to
+multilingual-NLP and AI-policy researchers → workshop poster.
