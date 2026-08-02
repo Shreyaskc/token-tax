@@ -1,5 +1,7 @@
 # tokentax — The Tokenizer Cost Penalty Across Languages
 
+[![tests](https://github.com/Shreyaskc/token-tax/actions/workflows/tests.yml/badge.svg)](https://github.com/Shreyaskc/token-tax/actions/workflows/tests.yml)
+
 **Class:** Dataset + measurement tool
 **Citation anchor:** arXiv/ACL paper + versioned dataset DOI
 
