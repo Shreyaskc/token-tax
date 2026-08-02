@@ -1,5 +1,6 @@
 # tokentax — The Tokenizer Cost Penalty Across Languages
 
+[![PyPI](https://img.shields.io/pypi/v/tokentax)](https://pypi.org/project/tokentax/)
 [![tests](https://github.com/Shreyaskc/token-tax/actions/workflows/tests.yml/badge.svg)](https://github.com/Shreyaskc/token-tax/actions/workflows/tests.yml)
 
 **Class:** Dataset + measurement tool
@@ -67,8 +68,9 @@ redeploy with `scripts/publish_hf_space.py`. A functionally identical
 Gradio version (live Hub reads, no rebuild step) sits unpublished at
 `scripts/gradio_explorer_prototype/` for if the account upgrades to PRO.
 
-Not yet released — no PyPI package, DOI, or arXiv preprint. See `PLANNING.md`
-for the full implementation brief and phased plan (HF Space explorer, paper).
+**Released on PyPI:** [`tokentax`](https://pypi.org/project/tokentax/) 0.1.0.
+Not yet released: DOI, arXiv preprint. See `PLANNING.md` for the full
+implementation brief and phased plan (paper, remaining release checklist).
 
 Two registry notes from the real run: `llama-3` resolves to the
 `NousResearch/Meta-Llama-3-8B` mirror, not `meta-llama/Meta-Llama-3-8B`,
@@ -79,6 +81,12 @@ sweep by choice, not necessity — see `registry.py` if you want to re-add it
 with `ANTHROPIC_API_KEY` set.
 
 ## Install
+
+```bash
+pip install tokentax
+```
+
+To hack on the library itself (and run the test suite):
 
 ```bash
 git clone https://github.com/Shreyaskc/token-tax.git
@@ -156,6 +164,6 @@ tokentax.pricing.estimate_cost("gpt-4o", n_tokens=1_000_000)
 ## Release checklist
 
 CITATION.cff (done) → full FLORES-200 run + validation against Petrov et al.
-2023 (done) → HF dataset + Space (done) → PyPI → arXiv → Papers with Code →
-Zenodo → seed emails to multilingual-NLP and AI-policy researchers →
+2023 (done) → HF dataset + Space (done) → PyPI (done) → arXiv → Papers with
+Code → Zenodo → seed emails to multilingual-NLP and AI-policy researchers →
 workshop poster.

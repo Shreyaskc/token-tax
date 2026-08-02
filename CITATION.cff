@@ -6,5 +6,6 @@ authors:
     alias: Shreyaskc
 title: "tokentax — The Tokenizer Cost Penalty Across Languages"
 version: 0.1.0
+date-released: 2026-08-01
 repository-code: "https://github.com/Shreyaskc/token-tax"
 license: MIT
