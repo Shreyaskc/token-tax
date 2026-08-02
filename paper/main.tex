@@ -218,10 +218,20 @@ historical anchor, not a currently-deployed tokenizer, and is excluded from
 \end{table}
 
 \paragraph{Confidence intervals.} Every reported premium ratio is a
-percentile bootstrap 95\% confidence interval over the 1{,}012 per-sentence
-ratios, computed by \texttt{evalci.ci(method="bootstrap")}
-\citep{chandrahas2026evalci} -- not reimplemented, per this project's
-cross-artifact reuse policy.
+percentile bootstrap 95\% confidence interval (9{,}999 resamples, fixed
+seed) over the 1{,}012 per-sentence ratios, computed by
+\texttt{evalci.ci(method="bootstrap")} \citep{chandrahas2026evalci} -- not
+reimplemented, per this project's cross-artifact reuse policy. The
+domain-robustness check (Section~\ref{sec:domain-robustness}) uses 1{,}999
+resamples per comparison and a fixed 35\% relative-difference threshold,
+set before running the check, for flagging a divergent comparison.
+
+\paragraph{Compute.} No model training or inference is performed anywhere
+in this pipeline -- every measurement is string tokenization, not a forward
+pass, so there is no parameter count or GPU budget to report. The full
+sweep (8 tokenizers $\times$ 203 languages $\times$ 1{,}012 sentences, plus
+the domain-robustness check and all bootstrap resampling) runs entirely on
+CPU and completes in well under an hour on a personal laptop-class machine.
 
 \section{Validation Against Prior Work}
 \label{sec:validation}
@@ -523,8 +533,17 @@ of truth for current numbers.
 This work is a measurement, not a system: it does not collect, generate, or
 redistribute personal data, and the released dataset contains only token
 counts, premium ratios, and confidence intervals -- never the underlying
-FLORES-200, OPUS-100, or Bible-corpus sentence text, which remain under
-their original sources' own licenses. The motivating concern is fairness:
+FLORES-200 (CC-BY-SA-4.0), OPUS-100 (mixed per-source licenses), or eBible
+Corpus (per-translation, predominantly CC-BY or public domain) sentence
+text, which remain under their original sources' own licenses; each
+tokenizer vocabulary likewise remains under its own vendor's model license.
+The released dataset itself is CC0, since it contains no source text to
+which upstream license terms would propagate. We did not perform
+additional screening of the source corpora for personally-identifying or
+offensive content beyond each corpus's own curation process; this is a
+limitation shared with any secondary use of these corpora, mitigated here
+by the fact that our own outputs are aggregate statistics, not text. The
+motivating concern is fairness:
 speakers of the languages in Table~\ref{tab:cost} and
 Figure~\ref{fig:top-languages} pay materially more for equivalent access to
 commercial language models, a disparity this paper aims to make legible and
